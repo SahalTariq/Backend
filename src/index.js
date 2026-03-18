@@ -23,7 +23,7 @@ connectDB()
 
      app.on('Error',(err)=>{
         console.log('error',err)
-        throw err
+        throw  err
     })
 })
 .catch( (err) => {
