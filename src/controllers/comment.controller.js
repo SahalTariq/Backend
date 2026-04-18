@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Comment } from "../models/comment.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const addComment = asyncHandler(async(req,res)=>{
     const {videoId} = req.params
@@ -37,7 +38,11 @@ const updateComment = asyncHandler(async(req,res)=>{
 const deleteComment = asyncHandler(async(req,res)=>{
     const {commentId} = req.params
 
-    await Comment.findByIdAndDelete(commentId)
+    const deletedComment = await Comment.findByIdAndDelete(commentId)
+
+    if(!deletedComment){
+        throw new ApiError(400,"Didn't found comment")
+    }
 
     return res
     .status(200)
