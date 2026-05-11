@@ -1,7 +1,10 @@
 import { isValidObjectId } from "mongoose";
-import asyncHandler from "../utils/asyncHandler";
-import { ApiError } from "../utils/ApiError";
-import { Like } from "../models/like.model";
+import asyncHandler from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { Like } from "../models/like.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { Comment } from "../models/comment.model.js";
+import { Tweet } from "../models/tweet.model.js";
 
 
 const toggleVideoLike = asyncHandler(async(req,res)=>{
@@ -116,7 +119,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
   })
 
   return res.status(200).json(
-    new ApiResponse(200, {}, "Tweet liked")
+    new ApiResponse(200, tweet, "Tweet liked")
   )
 })
 

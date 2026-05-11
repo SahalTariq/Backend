@@ -15,7 +15,7 @@ const likeSchmea = new mongoose.Schema({
         ref:'Comment'
     },
     tweet: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Tweet"
     }
 },

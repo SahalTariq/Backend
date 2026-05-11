@@ -5,53 +5,48 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
+const toggleSubscription = asyncHandler(async (req, res) => {
+    const { channelId } = req.params;
 
-
-const toggleSubscription = asyncHandler(async(req,res)=>{
-    const {channelId} = req.user?._id
-
-    if(!channelId?.trim()){
-        throw new ApiError(400,'ChannelId is missing')
+    if (!channelId?.trim()) {
+        throw new ApiError(400, "ChannelId is missing");
     }
-        if(!isValidObjectId(channelId)){
-            throw new ApiError(400,'Invalid ChannelId')
-        }
 
-    // check if already subscribed
+    if (!isValidObjectId(channelId)) {
+        throw new ApiError(400, "Invalid ChannelId");
+    }
+
+    if (channelId === req.user._id.toString()) {
+        throw new ApiError(400, "You cannot subscribe to yourself");
+    }
 
     const existingSubscription = await Subscription.findOne({
-        subscriber : req.user._id,
-        channel:channelId
-    })
+        subscriber: req.user._id,
+        channel: channelId
+    });
 
-    // if exists → unsubscribe
+    if (existingSubscription) {
+        await Subscription.findByIdAndDelete(existingSubscription._id);
 
-    if(existingSubscription){
-        await Subscription.findByIdAndDelete(existingSubscription._id)
-
-        return res
-        .status(200)
-        .json(
-            new ApiResponse(200,{},'Unsubscribed successfully')
-        )
+        return res.status(200).json(
+            new ApiResponse(200, {}, "Unsubscribed successfully")
+        );
     }
 
-    // if not exists → subscribe
-
     const newSubscription = await Subscription.create({
-        subscriber : req.user._id,
-        channel:channelId
-    })
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200,newSubscription,'Subscribed successfully')
-     )
+        subscriber: req.user._id,
+        channel: channelId
+    });
 
-})
+    return res.status(200).json(
+        new ApiResponse(200, newSubscription, "Subscribed successfully")
+    );
+});
+
+
 // controller to return subscriber list of a channel
-const getChannelSubscribers = asyncHandler(async(req,res)=>{
-    const {channelId} = req.user?._id
+const getUserChannelSubscribers = asyncHandler(async(req,res)=>{
+    const {channelId} = req.params
 
     if(!channelId?.trim()){
         throw new ApiError(400,'ChannelId is missing')
@@ -61,13 +56,26 @@ const getChannelSubscribers = asyncHandler(async(req,res)=>{
         throw new ApiError(400,'Invalid ChannelId')
     }
 
-    if(req.user._id.toString() === channelId){
-        throw new ApiError(400,'You cannot subscribe to yourself')
-    }
+    // if(req.params.toString() === channelId){
+    //     throw new ApiError(400,'You cannot subscribe to yourself')
+    // }
+
+    // if (channelId === req.user._id.toString()) {
+    //     throw new ApiError(400, "You cannot subscribe to yourself");
+    // }
+    
 
     const subscribers = await Subscription.find({
         channel : channelId
     }).populate('subscriber','username email profileImage').select('subscriber')
+
+    if(subscribers.length === 0){
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(200,[],'NO Subscriber Found')
+        )
+    }
 
     return res
     .status(200)
@@ -79,7 +87,9 @@ const getChannelSubscribers = asyncHandler(async(req,res)=>{
 // controller to return channel list to which user has subscribed
 
 const getSubscribedChannels = asyncHandler(async(req,res)=>{
-    const {subscriberId} = req.user?._id
+    const {subscriberId} = req.params
+
+    // console.log('Subscriber Id',subscriberId)
 
     if(!subscriberId?.trim()){
         throw new ApiError(400,'SubscriberId is missing')
@@ -92,7 +102,13 @@ const getSubscribedChannels = asyncHandler(async(req,res)=>{
     const channels = await Subscription.find({
         subscriber: subscriberId
 
-    }).populate('channel','username email profileImage').select('channel')
+    }).populate('channel','username email coverImage').select('channel')
+    
+    if (channels.length === 0) {
+    return res.status(200).json(
+        new ApiResponse(200, [], "No subscribed channels found")
+    );
+}
 
     return res
     .status(200)
@@ -101,8 +117,8 @@ const getSubscribedChannels = asyncHandler(async(req,res)=>{
     )
 })
 
-export const subscriptionController = {
+export {
     toggleSubscription,
-    getChannelSubscribers,
+    getUserChannelSubscribers,
     getSubscribedChannels
 }
