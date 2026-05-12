@@ -7,6 +7,11 @@ import { ApiError } from "../utils/ApiError.js";
 const addComment = asyncHandler(async(req,res)=>{
     const {videoId} = req.params
     const {content} = req.body
+
+    if (!req.user?._id) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
     const newComment = await Comment.create({
         content:content,
         video:videoId,
@@ -61,7 +66,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const limitNumber = parseInt(limit)
 
     const comments = await Comment.find({ video: videoId })
-        .populate('owner', 'name profilePic')
+        .populate('owner', 'name profilePic','content')
         .sort({ createdAt: -1 }) // newest first
         .skip((pageNumber - 1) * limitNumber)
         .limit(limitNumber)
@@ -78,9 +83,82 @@ const getVideoComments = asyncHandler(async (req, res) => {
     )
 })
 
+// controllers/comment.controller.js
+
+// const getAllComments = asyncHandler(async (req, res) => {
+//   const comments = await Comment.find()
+//     .populate("owner", "name profilePic")
+//     .populate("video", "title") // 👈 IMPORTANT (gets video title)
+//     .sort({ createdAt: -1 });
+
+//   return res.status(200).json(
+//     new ApiResponse(200, comments, "All comments fetched successfully")
+//   );
+// });
+
+// controllers/comment.controller.js
+
+const getComments = asyncHandler(async (req, res) => {
+  console.log("Controller Hits");
+
+  const comments = await Comment.aggregate([
+    {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "videoDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$videoDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$ownerDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$video",
+        videoTitle: {
+          $first: { $ifNull: ["$videoDetails.title", "Unknown Video"] },
+        },
+        comments: {
+          $push: {
+            _id: "$_id",
+            content: "$content",
+            owner: {
+              $ifNull: ["$ownerDetails.username", "Unknown User"],
+            },
+          },
+        },
+        totalComments: { $sum: 1 },
+      },
+    },
+  ]);
+
+  return res.status(200).json({
+    success: true,
+    data: comments,
+  });
+});
 export{
     addComment,
     updateComment,
     deleteComment,
-    getVideoComments
+    getVideoComments,
+    getComments
 }

@@ -7,9 +7,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import fs from 'fs'
 import mongoose from "mongoose";
-import { decode } from "punycode";
-// import { response } from "express";
-// import { upload } from "../middlewares/multer.middleware.js";
+
+
 
 
 const generateAccessAndRefreshTokens = async(userId) => {
@@ -40,83 +39,16 @@ const generateAccessAndRefreshTokens = async(userId) => {
    
 }
 
-// const registerUser = asyncHandler(async (req, res) => {
-
-//   const { fullName, username, email, password } = req.body;
-
-//   // ✅ validation
-//   if ([fullName, username, email, password].some((f) => !f || f.trim() === "")) {
-//     throw new ApiError(400, "All fields are required!");
-//   }
-
-//   if (!email.includes("@")) {
-//     throw new ApiError(400, "@ symbol is required in email");
-//   }
-
-//   // ✅ check existing user
-//   const existedUser = await User.findOne({
-//     $or: [{ username }, { email }]
-//   });
-
-//   if (existedUser) {
-//     throw new ApiError(409, "User already exists");
-//   }
-
-//   // ✅ safe file access
-//   const avatarLocalPath = req.files?.avatar?.[0]?.path;
-//   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-
-//   if (!avatarLocalPath) {
-//     throw new ApiError(400, "Avatar file is required!");
-//   }
-
-//   // ✅ upload avatar
-//   const avatar = await uploadOnCloudinary(avatarLocalPath);
-
-//   if (!avatar) {
-//     throw new ApiError(500, "Avatar upload failed");
-//   }
-
-//   // ✅ upload cover image only if exists
-//   let coverImage = null;
-
-//   if (coverImageLocalPath) {
-//     coverImage = await uploadOnCloudinary(coverImageLocalPath);
-//   }
-
-//   // ✅ create user
-//   const user = await User.create({
-//     fullName,
-//     username: username.toLowerCase(),
-//     email,
-//     password,
-//     avatar: avatar.url,
-//     coverImage: coverImage?.url || ""
-//   });
-
-//   const createdUser = await User.findById(user._id).select(
-//     "-password -refreshToken"
-//   );
-
-//   if (!createdUser) {
-//     throw new ApiError(500, "User creation failed");
-//   }
-
-//   return res.status(201).json(
-//     new ApiResponse(201, createdUser, "User registered successfully")
-//   );
-// });
-
 
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-    console.log("FILES:", req.files);
+    // console.log("BODY:", req.body);
+    // console.log("FILES:", req.files);
 
     const { fullName, username, email, password } = req.body;
 
-    // ✅ SAFE validation
+    //  SAFE validation
     if (!fullName || !username || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -124,7 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // ✅ Check existing user
+    //  Check existing user
     const existedUser = await User.findOne({
       $or: [{ username }, { email }]
     });
@@ -136,7 +68,7 @@ const registerUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // ✅ SAFE file handling
+    //  SAFE file handling
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
     const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
@@ -147,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // ✅ Upload avatar
+    //  Upload avatar
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
     if (!avatar) {
@@ -157,14 +89,14 @@ const registerUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // ✅ Upload cover only if exists
+    //  Upload cover only if exists
     let coverImage = null;
 
     if (coverImageLocalPath) {
       coverImage = await uploadOnCloudinary(coverImageLocalPath);
     }
 
-    // ✅ Create user
+    //  Create user
     const user = await User.create({
       fullName,
       username: username.toLowerCase(),
@@ -257,7 +189,7 @@ const loginUser = asyncHandler(async(req,res) => {
 })
 
 const logoutUser = asyncHandler(async(req,res)=>{
-    User.findByIdAndUpdate(
+     await User.findByIdAndUpdate(
         req.user._id,
         {
             $unset:{
