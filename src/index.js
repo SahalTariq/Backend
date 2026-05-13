@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import mongoose from 'mongoose';
 import connectDB from './db/dbConnect.js';
 import app from './app.js';
-// import connectDB from "./db/dbConnect.js";
+
 
 
 dotenv.config({
