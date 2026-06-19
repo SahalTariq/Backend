@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import LikeButton from "../componnents/LikeButton";
 // import AddToPlaylistButton from "./AddToPlaylistButton";
-import CommentButton from "../componnents/CommentButton";
+import { useNavigate } from "react-router-dom";
 
 // VideoCard.jsx
 export default function VideoCard({ video }) {
 
   const [showModal, setShowModal] = useState(false)
+  const navigate = useNavigate();
 
 
   // const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -31,7 +32,9 @@ export default function VideoCard({ video }) {
   return (
     <div className=" bg-bg2 border border-border rounded-lg overflow-hidden cursor-pointer transition hover:scale-[1.02] hover:border-text3">
       {/* Thumbnail */}
-      <div className="aspect-video bg-bg4 relative">
+      <div className="aspect-video bg-bg4 relative cursor-pointer"
+      onClick={() => navigate(`/watch/${video._id}`)}
+      >
         <img
           src={video.thumbnail}
           alt="thumbnail"
@@ -69,7 +72,6 @@ export default function VideoCard({ video }) {
              <div className="flex gap-2 mt-3">
             <LikeButton videoId={video._id} initialLiked={isLiked} />
             {/* <AddToPlaylistButton videoId={video._id} /> */}
-            <CommentButton videoId={video._id}/>
           </div>
 
         {/* {isLoggedIn && (

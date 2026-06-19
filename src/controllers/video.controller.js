@@ -191,7 +191,30 @@ const getMyVideos = asyncHandler(async (req, res) => {
 //     //         new ApiResponse(200,updatedVideoDetails,'Video Details updated successfully')
 //     //     )   
 
+const getVideoById = asyncHandler(async (req, res) => {
+  try {
+   console.log("Fetching video ID:", req.params.id);
+   
+    const video = await Video.findById(req.params.id)
+      .populate("owner", "username avatar");
 
+    if (!video) {
+      return res.status(404).json({
+        message: "Video not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: video,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 
 const updateVideo = asyncHandler(async (req, res) => {
@@ -454,7 +477,7 @@ const togglePublishStatus = asyncHandler(async(req,res)=>{
 
 export{
     publishVideo,
-    // getVideoById,
+    getVideoById,
     updateVideo,
     // deleteVideo,
     togglePublishStatus,

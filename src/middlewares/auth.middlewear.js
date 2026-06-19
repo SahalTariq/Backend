@@ -45,43 +45,41 @@ import jwt from "jsonwebtoken"
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   console.log("===== VERIFY JWT START =====");
 
-  console.log("AUTH HEADER:", req.headers.authorization);
-  console.log("COOKIES:", req.cookies);
-
   const authHeader = req.headers.authorization;
+
   const token =
     req.cookies?.accessToken ||
     (authHeader?.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : null);
 
-  console.log("EXTRACTED TOKEN:", token);
+  console.log("TOKEN:", token);
 
   if (!token) {
-    console.log("❌ NO TOKEN FOUND");
-    throw new ApiError(401, "No token found");
+    return next(new ApiError(401, "No token found"));
   }
 
   try {
-    const decodedToken = jwt.verify(
-      token,
-      process.env.ACCESS_TOKEN_SECRET
-    );
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    console.log("DECODED:", decodedToken);
+    console.log("DECODED TOKEN:", decoded);
 
-    const user = await User.findById(decodedToken?.id);
+    // IMPORTANT FIX 👇
+    const userId = decoded.id; // MUST match your JWT payload
 
-    console.log("USER FOUND:", user);
+    const user = await User.findById(userId);
 
     if (!user) {
-      throw new ApiError(401, "User not found");
+      return next(new ApiError(401, "User not found"));
     }
 
     req.user = user;
+
+    console.log("AUTH USER SET:", req.user._id);
+
     next();
   } catch (error) {
-    console.log("❌ JWT VERIFY ERROR:", error.message);
-    throw new ApiError(401, error.message);
+    console.log("JWT ERROR:", error.message);
+    return next(new ApiError(401, "Invalid token"));
   }
 });

@@ -6,13 +6,17 @@ import {
     publishVideo,
     togglePublishStatus,
     updateVideo,
-    getMyVideos
+    getMyVideos,
+    getVideoById
 } from "../controllers/video.controller.js"
 import { verifyJWT } from "../middlewares/auth.middlewear.js";
 
 import {upload} from "../middlewares/multer.middleware.js"
 
 const router = Router();
+console.log("VIDEO ROUTES LOADED");
+
+
 
 router.get("/", getAllVideos);
 
@@ -20,6 +24,8 @@ router.get("/", getAllVideos);
 // User's own videos
 router.get("/profile", verifyJWT, getMyVideos);
 
+
+router.get("/:id", getVideoById);
 
 
 

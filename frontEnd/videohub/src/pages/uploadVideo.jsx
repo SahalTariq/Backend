@@ -165,16 +165,24 @@
 
 
 
-// UploadVideo.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { uploadVideo, resetVideoState, getVideos } from "../features/videoSlice.js";
+import {
+  uploadVideo,
+  resetVideoState,
+} from "../features/videoSlice.js";
 import { useNavigate } from "react-router-dom";
 
 export default function UploadVideo() {
   const dispatch = useDispatch();
-  const navigate = useNavigate()
-  const { loading, error, success } = useSelector((state) => state.video);
+  const navigate = useNavigate();
+
+  const { loading, error, success } = useSelector(
+    (state) => state.video
+  );
+
+  const videoRef = useRef(null);
+  const thumbnailRef = useRef(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -186,51 +194,46 @@ export default function UploadVideo() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (files) {
-      setForm({ ...form, [name]: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm((prev) => ({
+      ...prev,
+      [name]: files ? files[0] : value,
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("description", form.description);
-    formData.append("videoFile", form.videoFile);
-    formData.append("thumbnail", form.thumbnail);
+
+    Object.entries(form).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
 
     dispatch(uploadVideo(formData));
   };
 
-  // Reset form and refresh videos after success
   useEffect(() => {
-    let timer;
-    if (success) {
-      setForm({
-        title: "",
-        description: "",
-        videoFile: null,
-        thumbnail: null,
-      });
+    if (!success) return;
 
-      // Reset file input fields
-      const videoInput = document.querySelector('input[name="videoFile"]');
-      const thumbnailInput = document.querySelector('input[name="thumbnail"]');
-      if (videoInput) videoInput.value = "";
-      if (thumbnailInput) thumbnailInput.value = "";
+    setForm({
+      title: "",
+      description: "",
+      videoFile: null,
+      thumbnail: null,
+    });
 
-      // dispatch(resetVideoState());
-      dispatch(getVideos()); // ✅ Refresh videos list
-
-     timer = setTimeout(() => {
-        navigate("/")
-      }, 3000);
+    if (videoRef.current) {
+      videoRef.current.value = "";
     }
-    return () => clearTimeout(timer)
-  }, [success, dispatch,navigate]);
+
+    if (thumbnailRef.current) {
+      thumbnailRef.current.value = "";
+    }
+
+    dispatch(resetVideoState());
+
+    navigate("/");
+  }, [success, dispatch, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
@@ -240,8 +243,8 @@ export default function UploadVideo() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
           <input
+            type="text"
             name="title"
             value={form.title}
             required
@@ -250,22 +253,22 @@ export default function UploadVideo() {
             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white"
           />
 
-          {/* Description */}
           <textarea
             name="description"
-            required
             value={form.description}
+            required
             onChange={handleChange}
             placeholder="Description"
             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white"
           />
 
-          {/* Video file */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="video-upload" className="text-sm font-medium text-gray-300">
+            <label className="text-sm font-medium text-gray-300">
               Upload Video
             </label>
+
             <input
+              ref={videoRef}
               type="file"
               name="videoFile"
               required
@@ -277,20 +280,21 @@ export default function UploadVideo() {
               file:text-sm file:font-semibold
               file:bg-indigo-600 file:text-white
               hover:file:bg-indigo-700
-              cursor:pointer"
+              cursor-pointer"
             />
           </div>
 
-          {/* Thumbnail */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-gray-300">
+            <label className="text-sm font-medium text-gray-300">
               Upload Thumbnail
             </label>
+
             <input
+              ref={thumbnailRef}
               type="file"
-              required
               name="thumbnail"
-              accept="image/png, image/jpeg, image/webp" 
+              required
+              accept="image/png,image/jpeg,image/webp"
               onChange={handleChange}
               className="w-full text-sm text-gray-400
               file:mr-4 file:py-2 file:px-4
@@ -300,20 +304,24 @@ export default function UploadVideo() {
               hover:file:bg-blue-700
               cursor-pointer"
             />
-            <p className="text-xs text-gray-500">Recommended: 1280x720 (PNG or JPG)</p>
+
+            <p className="text-xs text-gray-500">
+              Recommended: 1280×720 (PNG or JPG)
+            </p>
           </div>
 
-          {/* Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold disabled:opacity-50"
           >
             {loading ? "Uploading..." : "Upload Video"}
           </button>
 
-          {/* Messages */}
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && (
+            <p className="text-red-400 text-sm">{error}</p>
+          )}
+
           {success && (
             <p className="text-green-400 text-sm">
               Video uploaded successfully 🎉

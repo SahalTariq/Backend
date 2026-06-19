@@ -7,9 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UploadVideo from "./pages/uploadVideo";
 import LikedVideos from "./pages/LikedVideos";
 import PlaylistPage from "./pages/PlaylistPage";
-import CommentsPage from "./pages/CommentsPage";
+// import CommentsPage from "./pages/CommentsPage";
 import ProfilePage from "./pages/ProfilePage"
 import PrivateRoute from "./componnents/PrivateRoute";
+import WatchVideo from "./pages/WatchVideo";
 
 
 
@@ -25,6 +26,8 @@ function App() {
 
          <Route path="/*" element={<Layout />} />
 
+          <Route path="/watch/:id" element={<WatchVideo />} />
+
         <Route path="/profile"
            element={
            <PrivateRoute>
@@ -32,7 +35,7 @@ function App() {
            </PrivateRoute>
   }
          />
-        <Route path="/allcomments" element={<CommentsPage />} />
+        {/* <Route path="/allcomments" element={<CommentsPage />} /> */}
 
         {/* Dashboard Layout */}
        
