@@ -3,24 +3,27 @@ import Layout from "./layout/Layout"
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import { uploadVideo } from "./features/videoSlice";
 import UploadVideo from "./pages/uploadVideo";
 import LikedVideos from "./pages/LikedVideos";
-import PlaylistPage from "./pages/PlaylistPage";
-// import CommentsPage from "./pages/CommentsPage";
+import PlaylistsPage from "./pages/PlaylistsPage"
+import PlaylistDetailsPage from "./pages/PlaylistDetailsPage"
 import ProfilePage from "./pages/ProfilePage"
 import PrivateRoute from "./componnents/PrivateRoute";
 import WatchVideo from "./pages/WatchVideo";
+import { Toaster } from "react-hot-toast";
 
 
 
 
 function App() {
   return (
+      
     <BrowserRouter>
+
+     <Toaster position="top-right" />
+     
       <Routes>
 
-        {/* Auth Pages (NO Sidebar) */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
@@ -35,9 +38,7 @@ function App() {
            </PrivateRoute>
   }
          />
-        {/* <Route path="/allcomments" element={<CommentsPage />} /> */}
-
-        {/* Dashboard Layout */}
+        
        
         <Route path="/upload" 
         element={
@@ -55,17 +56,17 @@ function App() {
         }
         />
 
-        <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
 
-        
-        
-
-        
-        
-        
+        <Route path="/playlists" element={<PlaylistsPage />} />
+          <Route
+            path="/playlists/:playlistId"
+            element={<PlaylistDetailsPage />}
+          />     
 
       </Routes>
     </BrowserRouter>
+
+    
   );
 }
 

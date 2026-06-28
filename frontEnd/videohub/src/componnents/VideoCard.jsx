@@ -2,32 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import LikeButton from "../componnents/LikeButton";
-// import AddToPlaylistButton from "./AddToPlaylistButton";
+// import PlaylistModal from "../componnents/CreatePlaylistModal";
 import { useNavigate } from "react-router-dom";
 
 // VideoCard.jsx
 export default function VideoCard({ video }) {
 
-  const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate();
 
-
-  // const user = JSON.parse(localStorage.getItem("user") || "{}");
-  // const isLoggedIn = !!user._id;
-  
-  // Check if video is liked (you can get from like slice or video data)
-  const [isLiked, setIsLiked] = useState(false);
-  
-  // You can check if current video is in likedVideos list
-  const { likedVideos } = useSelector((state) => state.like);
-  
-  useEffect(() => {
-    if (likedVideos && likedVideos.length > 0) {
-      const found = likedVideos.find(v => v._id === video._id);
-      setIsLiked(!!found);
-    }
-  }, [likedVideos, video._id]);
 
   return (
     <div className=" bg-bg2 border border-border rounded-lg overflow-hidden cursor-pointer transition hover:scale-[1.02] hover:border-text3">
@@ -54,7 +36,7 @@ export default function VideoCard({ video }) {
             src={video.owner?.avatar}
             className="w-8 h-8 rounded-full bg-bg4 object-cover"
             onError={(e) => {
-              e.target.src = "https://via.placeholder.com/32"; // Fallback avatar
+              e.target.src = "https://via.placeholder.com/32"; 
             }}
           />
           <div>
@@ -66,31 +48,6 @@ export default function VideoCard({ video }) {
             </p>
           </div>
         </div>
-
-            {/* Action Buttons */}
-
-             <div className="flex gap-2 mt-3">
-            <LikeButton videoId={video._id} initialLiked={isLiked} />
-            {/* <AddToPlaylistButton videoId={video._id} /> */}
-          </div>
-
-        {/* {isLoggedIn && (
-          <div className="flex gap-2 mt-3">
-            <LikeButton videoId={video._id} initialLiked={isLiked} />
-            
-          </div>
-        )} */}
-
-        {/* <button onClick={() => setShowModal(true)}>
-          Save
-        </button> */}
-
-        {/* {showModal && (
-          <PlaylistModal
-            videoId={video._id}
-            onClose={() => setShowModal(false)}
-          />
-        )} */}
 
       </div>
     </div>

@@ -1,83 +1,213 @@
-import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+
 import {
-  fetchPlaylists,
-  toggleVideo,
-  createPlaylist
-} from "../features/playlistSlice.js"
+  fetchUserPlaylists,
+  addVideoToPlaylist,
+  removeVideoFromPlaylist,
+  createPlaylist,
+} from "../features/playlistSlice.js";
 
 export default function PlaylistModal({ videoId, onClose }) {
-  const dispatch = useDispatch()
-  const { playlists } = useSelector(s => s.playlist)
-  const { user, token } = useSelector(s => s.auth)
+  const dispatch = useDispatch();
 
-  const [newName, setNewName] = useState("")
-  const [newDesc, setNewDesc] = useState("")
+  const { playlists } = useSelector((state) => state.playlist);
+  const { user } = useSelector((state) => state.auth);
+
+  const [newName, setNewName] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchPlaylists({ userId: user._id, token }))
-  }, [])
+    if (user?._id) {
+      dispatch(fetchUserPlaylists(user._id));
+    }
+  }, [dispatch, user]);
 
-  const handleToggle = (p) => {
-    const exists = p.videos?.includes(videoId)
+  const handleToggle = async (playlist) => {
+    const exists = playlist.videos?.some(
+      (video) =>
+        (video._id || video).toString() === videoId
+    );
 
-    dispatch(toggleVideo({
-      playlistId: p._id,
-      videoId,
-      exists,
-      token
-    }))
-  }
+    try {
+      if (exists) {
+        await dispatch(
+          removeVideoFromPlaylist({
+            playlistId: playlist._id,
+            videoId,
+          })
+        ).unwrap();
 
-  const handleCreate = () => {
-    dispatch(createPlaylist({
-      data: { name: newName, description: newDesc },
-      token
-    }))
-  }
+        toast.success(
+          `Video removed from ${playlist.name}`
+        );
+      } else {
+        await dispatch(
+          addVideoToPlaylist({
+            playlistId: playlist._id,
+            videoId,
+          })
+        ).unwrap();
+
+        toast.success(
+          `Video added to ${playlist.name}`
+        );
+      }
+
+      dispatch(fetchUserPlaylists(user._id));
+    } catch (error) {
+      toast.error(error || "Operation failed");
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!newName.trim() || !newDesc.trim()) {
+      toast.error(
+        "Playlist name and description are required"
+      );
+      return;
+    }
+
+    try {
+      const playlist = await dispatch(
+        createPlaylist({
+          name: newName,
+          description: newDesc,
+        })
+      ).unwrap();
+
+      await dispatch(
+        addVideoToPlaylist({
+          playlistId: playlist._id,
+          videoId,
+        })
+      ).unwrap();
+
+      dispatch(fetchUserPlaylists(user._id));
+
+      toast.success(
+        `Video added to ${playlist.name}`
+      );
+
+      setNewName("");
+      setNewDesc("");
+      onClose();
+    } catch (error) {
+      toast.error(error || "Failed to create playlist");
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-      <div className="bg-gray-900 p-4 w-[400px] rounded">
+    <div
+      className="fixed inset-0 bg-black/70 flex justify-center items-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-zinc-900 w-[450px] rounded-lg p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-semibold text-white mb-4">
+          Save to Playlist
+        </h2>
 
-        <h2 className="mb-3">Save to playlist</h2>
+        {/* Existing Playlists */}
+        {!showCreateForm && (
+          <>
+            <div className="space-y-2 max-h-[250px] overflow-y-auto">
+              {playlists?.length > 0 ? (
+                playlists.map((playlist) => {
+                  const checked = playlist.videos?.some(
+                    (video) =>
+                      (video._id || video).toString() ===
+                      videoId
+                  );
 
-        {/* LIST */}
-        <div className="max-h-[200px] overflow-y-auto space-y-2">
-          {playlists.map(p => (
-            <div
-              key={p._id}
-              onClick={() => handleToggle(p)}
-              className="flex justify-between bg-gray-800 p-2 rounded cursor-pointer"
-            >
-              <span>{p.name}</span>
-              <input type="checkbox" readOnly />
+                  return (
+                    <label
+                      key={playlist._id}
+                      className="flex items-center justify-between bg-zinc-800 p-3 rounded cursor-pointer hover:bg-zinc-700"
+                    >
+                      <span className="text-white">
+                        {playlist.name}
+                      </span>
+
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() =>
+                          handleToggle(playlist)
+                        }
+                      />
+                    </label>
+                  );
+                })
+              ) : (
+                <p className="text-gray-400">
+                  No playlists found
+                </p>
+              )}
             </div>
-          ))}
-        </div>
 
-        {/* CREATE */}
-        <div className="mt-4">
-          <input
-            placeholder="Name"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            className="w-full mb-2 p-1"
-          />
-          <input
-            placeholder="Description"
-            value={newDesc}
-            onChange={e => setNewDesc(e.target.value)}
-            className="w-full mb-2 p-1"
-          />
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="mt-4 w-full bg-red-600 hover:bg-red-700 py-2 rounded text-white"
+            >
+              + Create New Playlist
+            </button>
+          </>
+        )}
 
-          <button onClick={handleCreate} className="bg-blue-500 px-3 py-1">
-            Create
-          </button>
-        </div>
+        {/* Create Playlist Form */}
+        {showCreateForm && (
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Playlist Name"
+              value={newName}
+              onChange={(e) =>
+                setNewName(e.target.value)
+              }
+              className="w-full p-2 rounded bg-zinc-800 text-white"
+            />
 
-        <button onClick={onClose} className="mt-3">Close</button>
+            <textarea
+              placeholder="Description"
+              value={newDesc}
+              onChange={(e) =>
+                setNewDesc(e.target.value)
+              }
+              className="w-full p-2 rounded bg-zinc-800 text-white"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleCreate}
+                className="flex-1 bg-green-600 hover:bg-green-700 py-2 rounded"
+              >
+                Create
+              </button>
+
+              <button
+                onClick={() =>
+                  setShowCreateForm(false)
+                }
+                className="flex-1 bg-gray-600 hover:bg-gray-700 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          className="w-full mt-4 bg-zinc-700 hover:bg-zinc-600 py-2 rounded"
+        >
+          Close
+        </button>
       </div>
     </div>
-  )
+  );
 }

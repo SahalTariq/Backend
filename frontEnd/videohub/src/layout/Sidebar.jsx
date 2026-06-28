@@ -4,12 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { setActive } from "../features/uiSlice";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Add this import
-import { useDispatch as useReduxDispatch } from "react-redux"; // Rename to avoid conflict
+// import { useDispatch as useReduxDispatch } from "react-redux"; // Rename to avoid conflict
 import { getLikedVideos } from "../features/likeSlice.js"; // Add this import
 
 export default function Sidebar() {
   const dispatch = useDispatch();
-  const reduxDispatch = useReduxDispatch(); // For like actions
+  // const reduxDispatch = useReduxDispatch(); // For like actions
   const navigate = useNavigate(); // Add navigation
   const active = useSelector((state) => state.ui?.active);
   const [isMobile, setIsMobile] = useState(false);
@@ -54,7 +54,7 @@ export default function Sidebar() {
   const handleMenuItemClick = async (item) => {
     // Special handling for Liked Videos
     if (item.id === "likedVideos") {
-      await reduxDispatch(getLikedVideos());
+      await dispatch(getLikedVideos());
       navigate("/liked-videos");
       dispatch(setActive(item.id));
       if (isMobile) setIsSidebarOpen(false);
@@ -80,7 +80,7 @@ export default function Sidebar() {
   const MobileToggle = () => (
     <button
       onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      className="fixed top-4 left-4 z-50 md:hidden bg-bg2 p-2 rounded-lg shadow-lg border border-border"
+      className="fixed top-1 left-0 z-50 md:hidden bg-bg2 p-2 rounded-lg shadow-lg border border-border"
     >
       <span className="text-2xl">☰</span>
     </button>
@@ -117,7 +117,7 @@ export default function Sidebar() {
       >
         <div className="p-4">
           {/* Logo Section - Responsive */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between ml-8 mb-6">
             <h2 className={`
               font-bold
               ${isMobile ? 'text-xl' : 'text-lg'}

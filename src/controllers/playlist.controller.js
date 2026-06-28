@@ -1,15 +1,17 @@
-// import { Playlist } from "../models/playlist.model";
+
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { isValidObjectId } from "mongoose";
 import {Playlist} from '../models/playlist.model.js'
+import { Video } from "../models/video.model.js";
 
 
 const createPlaylist = asyncHandler(async(req,res)=>{
     const {name,description} = req.body
 
-    if(!name?.trim() && !description?.trim()){
+
+      if(!name?.trim() || !description?.trim()){
         throw new ApiError(400,'Name and description are required')
     }
 
@@ -44,24 +46,38 @@ const getUserPlaylists = asyncHandler(async(req,res)=>{
     )
 })
 
-const getPlaylistById  = asyncHandler(async(req,res)=>{
-    const {playlistId} = req.params
+const getPlaylistById = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
 
-    if(!isValidObjectId(playlistId)){
-        throw new ApiError(400,'Invalid playlistId')
-    }
+  if (!isValidObjectId(playlistId)) {
+    throw new ApiError(400, "Invalid playlistId");
+  }
 
-    const playlist = await Playlist.findById(playlistId)
+  const playlist = await Playlist.findById(playlistId)
+    .populate({
+      path: "videos",
+      select:
+        "title thumbnail views owner duration createdAt",
+    });
 
-    if(!playlist){
-        throw new ApiError(404,'Playlist not found')
-    }
-    return res 
-    .status(200)
-    .json(
-        new ApiResponse(200,playlist,'Playlist fetched successfully')
+  if (!playlist) {
+    throw new ApiError(404, "Playlist not found");
+  }
+
+  console.log(
+  JSON.stringify(playlist, null, 2)
+);
+
+
+console.log(JSON.stringify(playlist, null, 2))
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      playlist,
+      "Playlist fetched successfully"
     )
-})
+  );
+});
 
 const addVideoToPlaylist = asyncHandler(async(req,res)=>{
   const {playlistId,videoId} = req.params

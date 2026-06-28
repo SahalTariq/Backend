@@ -27,7 +27,17 @@ const [search, setSearch] = useState("");
     </div>
 
     {/* PAGE CONTENT */}
-    <main className="pt-16 p-4 overflow-x-hidden">
+    <main className="pt-16 p-4 overflow-x-hidden
+    scrollbar-thin
+            scrollbar-thumb-zinc-600
+            scrollbar-track-transparent
+
+            [&::-webkit-scrollbar]:w-2
+            [&::-webkit-scrollbar-track]:bg-transparent
+            [&::-webkit-scrollbar-thumb]:bg-zinc-600
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            hover:[&::-webkit-scrollbar-thumb]:bg-zinc-500
+    ">
       <Home search={search} />
       
 

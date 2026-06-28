@@ -66,7 +66,17 @@ export default function Home({search}) {
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 
+      scrollbar-thin
+            scrollbar-thumb-zinc-600
+            scrollbar-track-transparent
+
+            [&::-webkit-scrollbar]:w-2
+            [&::-webkit-scrollbar-track]:bg-transparent
+            [&::-webkit-scrollbar-thumb]:bg-zinc-600
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            hover:[&::-webkit-scrollbar-thumb]:bg-zinc-500
+      ">
         {videos.length > 0 ? (
           filteredVideos.map((video) => (
             <VideoCard key={video._id} video={video} />

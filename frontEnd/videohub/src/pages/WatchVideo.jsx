@@ -1,11 +1,29 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams,Link } from "react-router-dom";
 import CommentSection from "../componnents/CommentSection";
+import PlaylistModal from "../componnents/PlaylistModal";
+import { useSelector } from "react-redux";
+import LikeButton from "../componnents/LikeButton";
 
 export default function WatchVideo() {
-  const { id } = useParams();
 
-  console.log("Video ID:", id);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+
+   const [isLiked, setIsLiked] = useState(false);
+   const { likedVideos } = useSelector((state) => state.like);
+
+   const { id } = useParams();
+
+   console.log("Video ID:", id);
+
+   useEffect(() => {
+    if (likedVideos && likedVideos.length > 0) {
+      const found = likedVideos.find(v => v._id === id);
+      setIsLiked(!!found);
+    }
+  }, [likedVideos, id]);
+
+  const { user } = useSelector((state) => state.auth);
 
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +67,31 @@ export default function WatchVideo() {
         {video.title}
       </h1>
 
+      <div className="flex items-center gap-3 mt-4">
+       {user ? (
+         <button
+          onClick={() =>
+            setShowPlaylistModal(true)
+          }
+          className="bg-zinc-800 px-4 py-2 rounded text-white hover:bg-zinc-700"
+        >
+          Save
+        </button>
+       ) : ( <p className="text-gray-400">
+          🔒 Please{" "}
+          <a href="/login" className="text-blue-400 hover:underline font-medium">
+            login
+          </a>{" "}
+          to Create and Save to Playlist
+        </p> )}
+      </div>
+
+
+      <div className="flex gap-2 mt-3">
+            <LikeButton videoId={id} initialLiked={isLiked} />
+      </div>
+
+
       <p className="text-gray-400 mt-2">
         {video.description}
       </p>
@@ -58,6 +101,16 @@ export default function WatchVideo() {
       </p>
 
       <CommentSection videoId={id} />
+
+
+          {showPlaylistModal && (
+              <PlaylistModal
+                videoId={video._id}
+                onClose={() =>
+                  setShowPlaylistModal(false)
+                }
+              />
+            )}
       
     </div>
   );

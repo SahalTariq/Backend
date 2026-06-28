@@ -1,57 +1,318 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import * as api from "../app/playlistApi.js"
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-export const fetchPlaylists = createAsyncThunk(
-  "playlist/fetch",
-  async ({ userId, token }) => {
-    const res = await api.getUserPlaylists(userId, token)
-    return res.data
+const BASE_URL = "http://localhost:8000/api/v1/playlists";
+
+/* =========================
+   GET USER PLAYLISTS
+========================= */
+export const fetchUserPlaylists = createAsyncThunk(
+  "playlist/fetchUserPlaylists",
+  async (userId, thunkAPI) => {
+    try {
+      console.log("Fetching playlists for user:", userId);
+      const token = localStorage.getItem("token");
+      console.log("Token in fetchUserPlaylists:", token);
+      const res = await fetch(`${BASE_URL}/user/${userId}`, {
+        method: "GET",
+        // credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message);
+
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
   }
-)
+);
 
+/* =========================
+   CREATE PLAYLIST
+========================= */
 export const createPlaylist = createAsyncThunk(
-  "playlist/create",
-  async ({ data, token }) => {
-    const res = await api.createPlaylistApi(data, token)
-    return res.data
-  }
-)
+  "playlist/createPlaylist",
+  async ({ name, description }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+           "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`
+           },
+        body: JSON.stringify({ name, description }),
+      });
 
-export const toggleVideo = createAsyncThunk(
-  "playlist/toggle",
-  async ({ playlistId, videoId, exists, token }) => {
-    await api.toggleVideoApi(playlistId, videoId, exists, token)
-    return { playlistId, videoId, exists }
-  }
-)
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
+// Update Playlist
+
+export const updatePlaylist = createAsyncThunk(
+  "playlist/updatePlaylist",
+  async ({ playlistId, name, description }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `${BASE_URL}/${playlistId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            description,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok)
+        throw new Error(data.message);
+
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.message
+      );
+    }
+  }
+);
+
+// Delete Playlist
+
+export const deletePlaylist = createAsyncThunk(
+  "playlist/deletePlaylist",
+  async (playlistId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `${BASE_URL}/${playlistId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok)
+        throw new Error(data.message);
+
+      return playlistId;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.message
+      );
+    }
+  }
+);
+
+/* =========================
+   GET PLAYLIST BY ID
+========================= */
 export const fetchPlaylistById = createAsyncThunk(
-  "playlist/getOne",
-  async (id) => {
-    const res = await api.getPlaylistByIdApi(id)
-    return res.data
-  }
-)
+  "playlist/fetchPlaylistById",
+  async (playlistId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}/${playlistId}`, {
+        method: "GET",
+        // credentials: "include",
+        headers: {
+           "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`
+           },
+      });
 
-const slice = createSlice({
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      console.log("PLAYLIST API RESPONSE:", data);
+
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
+/* =========================
+   ADD VIDEO
+========================= */
+export const addVideoToPlaylist = createAsyncThunk(
+  "playlist/addVideo",
+  async ({ playlistId, videoId }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${BASE_URL}/add/${videoId}/${playlistId}`,
+        {
+          method: "PATCH",
+          // credentials: "include",
+          headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type":
+            "application/json",
+          },
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
+/* =========================
+   REMOVE VIDEO
+========================= */
+export const removeVideoFromPlaylist = createAsyncThunk(
+  "playlist/removeVideo",
+  async ({ playlistId, videoId }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${BASE_URL}/remove/${videoId}/${playlistId}`,
+        {
+          method: "PATCH",
+          // credentials: "include",
+          headers: {
+           "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`
+           },
+
+        });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
+
+
+
+/* =========================
+   SLICE
+========================= */
+const playlistSlice = createSlice({
   name: "playlist",
   initialState: {
     playlists: [],
-    currentPlaylist: null
+    currentPlaylist: null,
+    loading: false,
+    error: null,
   },
+
   reducers: {},
+
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPlaylists.fulfilled, (state, action) => {
-        state.playlists = action.payload
-      })
-      .addCase(createPlaylist.fulfilled, (state, action) => {
-        state.playlists.push(action.payload)
-      })
-      .addCase(fetchPlaylistById.fulfilled, (state, action) => {
-        state.currentPlaylist = action.payload
-      })
-  }
-})
 
-export default slice.reducer
+      /* GET USER PLAYLISTS */
+      .addCase(fetchUserPlaylists.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUserPlaylists.fulfilled, (state, action) => {
+        state.loading = false;
+        state.playlists = action.payload;
+      })
+      .addCase(fetchUserPlaylists.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* CREATE PLAYLIST */
+      .addCase(createPlaylist.fulfilled, (state, action) => {
+        state.playlists.unshift(action.payload);
+      })
+
+      /* GET PLAYLIST BY ID */
+      .addCase(fetchPlaylistById.fulfilled, (state, action) => {
+        state.currentPlaylist = action.payload;
+      })
+
+      /* ADD VIDEO */
+      .addCase(addVideoToPlaylist.fulfilled, (state, action) => {
+        state.currentPlaylist = action.payload;
+      })
+
+      /* REMOVE VIDEO */
+      .addCase(removeVideoFromPlaylist.fulfilled, (state, action) => {
+        state.currentPlaylist = action.payload;
+      })
+
+
+            /* UPDATE PLAYLIST */
+      .addCase(updatePlaylist.fulfilled, (state, action) => {
+
+          state.playlists = state.playlists.map(
+              (playlist) =>
+                  playlist._id === action.payload._id
+                      ? action.payload
+                      : playlist
+          );
+
+          if (
+              state.currentPlaylist?._id ===
+              action.payload._id
+          ) {
+              state.currentPlaylist =
+                  action.payload;
+          }
+      })
+
+              /* DELETE PLAYLIST */
+        .addCase(deletePlaylist.fulfilled, (state, action) => {
+
+            state.playlists =
+                state.playlists.filter(
+                    (playlist) =>
+                        playlist._id !== action.payload
+                );
+
+            if (
+                state.currentPlaylist?._id ===
+                action.payload
+            ) {
+                state.currentPlaylist = null;
+            }
+        })
+
+      
+
+      
+  },
+});
+
+export default playlistSlice.reducer;
