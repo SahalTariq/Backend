@@ -21,9 +21,13 @@ const createPlaylist = asyncHandler(async(req,res)=>{
         owner:req.user?._id
     })
 
+    console.log("Created Playlist:", newPlaylist);
+    console.log("Playlist Owner:", newPlaylist.owner);
+
     if(!newPlaylist){
         throw new ApiError(500,'Failed to create playlist')
     }
+    console.log('New Playlist Created:', newPlaylist);
 
     return res
     .status(200)
@@ -34,10 +38,17 @@ const createPlaylist = asyncHandler(async(req,res)=>{
 
 const getUserPlaylists = asyncHandler(async(req,res)=>{
     const {userId} = req.params
+
+    console.log("========== FETCH PLAYLISTS ==========");
+    console.log("Requested UserId:", userId);
+
     if(!isValidObjectId(userId)){
         throw new ApiError(400,'Invalid userId')
     }
     const playlists = await Playlist.find({owner:userId}).populate('videos')
+
+     console.log("Playlists Found:", playlists.length);
+    console.log(playlists);
 
     return res
     .status(200)

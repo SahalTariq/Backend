@@ -1,16 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
 // Toggle like on video
 export const toggleVideoLike = createAsyncThunk(
   "like/toggleVideoLike",
   async (videoId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`http://localhost:8000/api/v1/likes/toggle/v/${videoId}`, {
+      const response = await fetchWithAuth(`http://localhost:8000/api/v1/likes/toggle/v/${videoId}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       const data = await response.json();
       if (!response.ok) return rejectWithValue(data.message);
@@ -26,11 +23,8 @@ export const getLikedVideos = createAsyncThunk(
   "like/getLikedVideos",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch("http://localhost:8000/api/v1/likes/videos", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetchWithAuth("http://localhost:8000/api/v1/likes/videos", {
+        
       });
       const data = await response.json();
       if (!response.ok) return rejectWithValue(data.message);

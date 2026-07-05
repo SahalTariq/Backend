@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { apiService } from "../app/api.js";
+import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
 //  Async thunk RegisterUser
 export const registerUser = createAsyncThunk(
@@ -31,32 +32,57 @@ export const loginUser = createAsyncThunk(
 
 
 export const logoutUserApi = async () => {
-  const token = localStorage.getItem("token");
 
-  const res = await fetch("http://localhost:8000/api/v1/users/logout", {
+  const res = await fetchWithAuth("http://localhost:8000/api/v1/users/logout", {
     method: "POST",
-    credentials: "include",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
-  const data = await res.json();
+ if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message);
+}
 
-  return data;
+return await res.json();
 };
+
+
+export const getCurrentUser = createAsyncThunk(
+  "auth/getCurrentUser",
+  async (_, thunkAPI) => {
+    try {
+      const res = await fetchWithAuth(
+        "http://localhost:8000/api/v1/users/current-user",
+        {
+          method: "GET",
+        },
+         false // ← Don't redirect to login
+      );
+
+      if (res.status === 401) {
+        return null;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message);
+
+      return data.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: {
 
-  user: JSON.parse(localStorage.getItem("user")) || null,
-  token: localStorage.getItem("authToken") || null,
-  loading: false,
+  initialState: {
+  user: null,
+  loading: true,
   error: null,
   success: false,
-
-  },
+},
+  
   reducers: {
      clearAuthState: (state) => {
       state.error = null;
@@ -65,10 +91,12 @@ const authSlice = createSlice({
     },
     clearUser: (state) => {
       state.user = null;
+      state.error = null;
       state.success = false;
-      localStorage.removeItem("user");
-      localStorage.removeItem("authToken");
-    },
+      state.loading = false;
+
+    }
+   
   },
   extraReducers: (builder) => {
     // Register
@@ -103,19 +131,28 @@ const authSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.user = action.payload.data.user;
-
-        // Save to localStorage so user stays logged in on refresh
-        localStorage.setItem("user", JSON.stringify(action.payload.data.user));
-        if (action.payload.data.accessToken) {
-          localStorage.setItem("authToken", action.payload.data.accessToken);
-        }
-
         
       })
 
       .addCase(loginUser.rejected,(state,action)=>{
         state.loading = false,
-        state.error = action.payload
+        state.error = action.payload,
+        state.user = null;
+        state.success = false;
+      })
+
+            .addCase(getCurrentUser.pending, (state) => {
+        state.loading = true;
+      })
+
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload || null;
+      })
+
+      .addCase(getCurrentUser.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
       })
   },
 });

@@ -9,7 +9,7 @@ import {
   createPlaylist,
 } from "../features/playlistSlice.js";
 
-export default function PlaylistModal({ videoId, onClose }) {
+export default function PlaylistModal({ videoId = null , onClose }) {
   const dispatch = useDispatch();
 
   const { playlists } = useSelector((state) => state.playlist);
@@ -26,6 +26,13 @@ export default function PlaylistModal({ videoId, onClose }) {
   }, [dispatch, user]);
 
   const handleToggle = async (playlist) => {
+
+
+     if (!videoId) {
+    toast.error("No video selected.");
+    return;
+  }
+  
     const exists = playlist.videos?.some(
       (video) =>
         (video._id || video).toString() === videoId
@@ -62,22 +69,24 @@ export default function PlaylistModal({ videoId, onClose }) {
     }
   };
 
-  const handleCreate = async () => {
-    if (!newName.trim() || !newDesc.trim()) {
-      toast.error(
-        "Playlist name and description are required"
-      );
-      return;
-    }
+   const handleCreate = async () => {
+  if (!newName.trim() || !newDesc.trim()) {
+    toast.error(
+      "Playlist name and description are required"
+    );
+    return;
+  }
 
-    try {
-      const playlist = await dispatch(
-        createPlaylist({
-          name: newName,
-          description: newDesc,
-        })
-      ).unwrap();
+  try {
+    const playlist = await dispatch(
+      createPlaylist({
+        name: newName,
+        description: newDesc,
+      })
+    ).unwrap();
 
+    // Only add video if a valid videoId exists
+    if (videoId) {
       await dispatch(
         addVideoToPlaylist({
           playlistId: playlist._id,
@@ -85,19 +94,24 @@ export default function PlaylistModal({ videoId, onClose }) {
         })
       ).unwrap();
 
-      dispatch(fetchUserPlaylists(user._id));
-
       toast.success(
         `Video added to ${playlist.name}`
       );
-
-      setNewName("");
-      setNewDesc("");
-      onClose();
-    } catch (error) {
-      toast.error(error || "Failed to create playlist");
+    } else {
+      toast.success("Playlist created successfully");
     }
-  };
+
+     await dispatch(fetchUserPlaylists(user._id)).unwrap();
+
+      console.log("Fetched playlists after creating.");
+
+    setNewName("");
+    setNewDesc("");
+    onClose();
+  } catch (error) {
+    toast.error(error || "Failed to create playlist");
+  }
+};
 
   return (
     <div

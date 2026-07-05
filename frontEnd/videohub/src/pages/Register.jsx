@@ -18,23 +18,59 @@ export default function Register() {
     coverImage: null,
   });
 
+  const [emailError, setEmailError] = useState("");
+
+
   //  for resetting file inputs
   const [formKey, setFormKey] = useState(Date.now());
+  
+  // email validation
+const validateEmail = (email) => {
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  return emailRegex.test(email);
+};
 
   //  handle input changes
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+  const { name, value, files } = e.target;
 
-    if (files) {
-      setForm({ ...form, [name]: files[0] });
+  if (files) {
+    setForm((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
+    return;
+  }
+
+  setForm((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+
+  // Validate email while typing
+  if (name === "email") {
+    if (value === "") {
+      setEmailError("");
+    } else if (!validateEmail(value)) {
+      setEmailError("Please enter a valid email address.");
     } else {
-      setForm({ ...form, [name]: value });
+      setEmailError("");
     }
-  };
+  }
+};
+
 
   //  submit form
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!validateEmail(form.email)) {
+  setEmailError("Please enter a valid email address.");
+  return;
+}
+    
 
     const formData = new FormData();
     formData.append("fullName", form.fullName);
@@ -116,6 +152,12 @@ export default function Register() {
             onChange={handleChange}
             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+
+          {emailError && (
+            <p className="text-red-400 text-sm mt-1">
+              {emailError}
+            </p>
+          )}
 
           {/* Password */}
           <input

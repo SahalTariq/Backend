@@ -54,7 +54,6 @@ export default function Sidebar() {
   const handleMenuItemClick = async (item) => {
     // Special handling for Liked Videos
     if (item.id === "likedVideos") {
-      await dispatch(getLikedVideos());
       navigate("/liked-videos");
       dispatch(setActive(item.id));
       if (isMobile) setIsSidebarOpen(false);

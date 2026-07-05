@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addComment } from "../features/commentSlice.js";
+import { useSelector } from "react-redux";
 
 export default function CommentForm({ videoId }) {
   const [content, setContent] = useState("");
   const dispatch = useDispatch();
 
-  // Check if user is authenticated by checking token
-  const isAuthenticated = !!localStorage.getItem("token");
+  const { user } = useSelector((state) => state.auth);
+
+  const isAuthenticated = !!user;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,22 +33,40 @@ export default function CommentForm({ videoId }) {
   // If user is not logged in, show a login prompt
   if (!isAuthenticated) {
     return (
-      <div className="bg-zinc-800/50 rounded-lg p-4 text-center border border-zinc-700">
-        <p className="text-gray-400">
-          🔒 Please{" "}
-          <a href="/login" className="text-blue-400 hover:underline font-medium">
-            login
-          </a>{" "}
-          to add a comment
+    <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-5 text-center">
+
+        <p className="text-gray-300">
+
+            Join the conversation.
+
         </p>
-      </div>
+
+        <p className="text-gray-500 text-sm mt-1">
+
+            Sign in to post comments.
+
+        </p>
+
+        <button
+            onClick={()=>navigate("/login")}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg"
+        >
+            Login
+        </button>
+
+    </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="mb-2">
-        <p className="text-gray-400 text-sm">Commenting as <span className="text-white font-medium">You</span></p>
+       <p className="text-gray-400 text-sm">
+        Commenting as{" "}
+        <span className="text-white font-medium">
+          @{user?.username}
+        </span>
+      </p>
       </div>
       <textarea
         value={content}

@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import { errorHandler } from './middlewares/error.middleware.js'
 
 // routes import
 
@@ -18,7 +19,7 @@ const app = express();
 
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.CORS_ORIGIN,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -44,6 +45,7 @@ app.use("/api/v1/subscriptions",subscriptionRouter)
 app.use("/api/v1/dashboard",dashboardRouter)
 app.use("/api/v1/tweets",tweetRouter)
 
-app.use(express.json({limit:'16kb'}))
+// Global Error Handler (always last)
+app.use(errorHandler);
 
 export default app

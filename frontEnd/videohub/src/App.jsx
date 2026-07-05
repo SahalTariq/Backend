@@ -11,11 +11,21 @@ import ProfilePage from "./pages/ProfilePage"
 import PrivateRoute from "./componnents/PrivateRoute";
 import WatchVideo from "./pages/WatchVideo";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { getCurrentUser } from "./features/authSlice.js";
 
 
 
 
 function App() {
+
+  const dispatch = useDispatch();
+
+    useEffect(() => {
+      dispatch(getCurrentUser());
+    }, [dispatch]);
+
   return (
       
     <BrowserRouter>

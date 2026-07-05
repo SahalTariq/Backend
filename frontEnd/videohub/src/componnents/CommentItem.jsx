@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 import {
   deleteComment,
@@ -11,11 +12,11 @@ export default function CommentItem({
 }) {
   const dispatch = useDispatch();
 
-  const [editing, setEditing] =
-    useState(false);
+  const [editing, setEditing] = useState(false);
+  const [content, setContent] = useState(comment.content);
+  const { user } = useSelector((state) => state.auth);
 
-  const [content, setContent] =
-    useState(comment.content);
+  const isOwner = user && comment.owner && user._id === comment.owner._id;
 
   const handleDelete = async () => {
     try {
@@ -81,23 +82,25 @@ export default function CommentItem({
           </p>
         )}
 
-        <div className="flex gap-3 mt-2">
+        {isOwner && (
+          <div className="flex gap-3 mt-2">
+
           <button
-            onClick={() =>
-              setEditing(!editing)
-            }
-            className="text-blue-400"
+            onClick={() => setEditing(!editing)}
+            className="text-blue-400 hover:text-blue-300"
           >
             Edit
           </button>
 
           <button
             onClick={handleDelete}
-            className="text-red-400"
+            className="text-red-400 hover:text-red-300"
           >
             Delete
           </button>
-        </div>
+
+          </div>
+        )}
       </div>
     </div>
   );

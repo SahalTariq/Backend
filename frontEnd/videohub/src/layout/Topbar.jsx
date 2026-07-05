@@ -30,8 +30,6 @@ export default function Topbar({search,setSearch}) {
   try {
     await logoutUserApi();
 
-    localStorage.removeItem("token");
-
     dispatch(clearUser()); // ✅ CLEAR REDUX USER
 
     setShowDropdown(false);

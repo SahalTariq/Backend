@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
 const BASE_URL = "http://localhost:8000/api/v1/playlists";
 
@@ -9,21 +10,19 @@ export const fetchUserPlaylists = createAsyncThunk(
   "playlist/fetchUserPlaylists",
   async (userId, thunkAPI) => {
     try {
-      console.log("Fetching playlists for user:", userId);
-      const token = localStorage.getItem("token");
-      console.log("Token in fetchUserPlaylists:", token);
-      const res = await fetch(`${BASE_URL}/user/${userId}`, {
+      const res = await fetchWithAuth(`${BASE_URL}/user/${userId}`, {
         method: "GET",
-        // credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
       });
-
       const data = await res.json();
 
+
       if (!res.ok) throw new Error(data.message);
+
+      console.log("User Id in fetchUserPlaylist slice", userId);
+      console.log("Fetched Playlists:", data.data);
 
       return data.data;
     } catch (err) {
@@ -39,18 +38,17 @@ export const createPlaylist = createAsyncThunk(
   "playlist/createPlaylist",
   async ({ name, description }, thunkAPI) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BASE_URL}`, {
+     
+      const res = await fetchWithAuth(`${BASE_URL}/`, {
         method: "POST",
-        credentials: "include",
         headers: {
            "Content-Type": "application/json",
-           Authorization: `Bearer ${token}`
            },
         body: JSON.stringify({ name, description }),
       });
 
       const data = await res.json();
+      console.log("Created Playlist:", data.data._id);
       if (!res.ok) throw new Error(data.message);
 
       return data.data;
@@ -66,15 +64,13 @@ export const updatePlaylist = createAsyncThunk(
   "playlist/updatePlaylist",
   async ({ playlistId, name, description }, thunkAPI) => {
     try {
-      const token = localStorage.getItem("token");
 
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${BASE_URL}/${playlistId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             name,
@@ -103,15 +99,10 @@ export const deletePlaylist = createAsyncThunk(
   "playlist/deletePlaylist",
   async (playlistId, thunkAPI) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${BASE_URL}/${playlistId}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
 
@@ -136,13 +127,10 @@ export const fetchPlaylistById = createAsyncThunk(
   "playlist/fetchPlaylistById",
   async (playlistId, thunkAPI) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BASE_URL}/${playlistId}`, {
+      const res = await fetchWithAuth(`${BASE_URL}/${playlistId}`, {
         method: "GET",
-        // credentials: "include",
         headers: {
            "Content-Type": "application/json",
-           Authorization: `Bearer ${token}`
            },
       });
 
@@ -165,14 +153,11 @@ export const addVideoToPlaylist = createAsyncThunk(
   "playlist/addVideo",
   async ({ playlistId, videoId }, thunkAPI) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${BASE_URL}/add/${videoId}/${playlistId}`,
         {
           method: "PATCH",
-          // credentials: "include",
           headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type":
             "application/json",
           },
@@ -196,15 +181,12 @@ export const removeVideoFromPlaylist = createAsyncThunk(
   "playlist/removeVideo",
   async ({ playlistId, videoId }, thunkAPI) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${BASE_URL}/remove/${videoId}/${playlistId}`,
         {
           method: "PATCH",
-          // credentials: "include",
           headers: {
            "Content-Type": "application/json",
-           Authorization: `Bearer ${token}`
            },
 
         });

@@ -6,14 +6,8 @@ import { ApiError } from "../utils/ApiError.js";
 
 const addComment = asyncHandler(async (req, res) => {
 
-  console.log("BODY:", req.body);
-  console.log("USER:", req.user);
-  console.log("VIDEO:", req.params.videoId);
-
   const { videoId } = req.params;
   const { content } = req.body;
-
-  console.log("videoId is ", videoId);
 
   if (!content?.trim()) {
     throw new ApiError(400, "Comment is required");
@@ -22,8 +16,6 @@ const addComment = asyncHandler(async (req, res) => {
     if (!req.user?._id) {
     throw new ApiError(401, "User not authenticated");
   }
-
-
 
   const comment = await Comment.create({
     content,
@@ -63,7 +55,7 @@ const updateComment = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(
       403,
-      "Not authorized"
+      "You can only edit your own comment."
     );
   }
 
@@ -99,7 +91,7 @@ const deleteComment = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(
       403,
-      "Not authorized"
+      "You can only delete your own comment."
     );
   }
 

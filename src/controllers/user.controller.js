@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 // import { upload } from "../middlewares/multer.middleware.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { cookieOptions } from "../constants/cookieOptions.js";
 import jwt from "jsonwebtoken"
 import fs from 'fs'
 import mongoose from "mongoose";
@@ -161,21 +162,25 @@ const loginUser = asyncHandler(async(req,res) => {
   const {accessToken,refreshToken} = await generateAccessAndRefreshTokens(user._id)
   const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
-  const options = {
-    httpOnly : true,
-    // secure   : true
-    secure: false, //  FIX
-    sameSite: "lax", //  IMPORTANT for local dev
+//   For production:
+//   const options = {
+//     httpOnly: true,
+//     secure: true,
+//     sameSite: "none"
+//   }
 
-    // In production Required for HTTPS + different domains
-    secure: true,
-    sameSite: "none"
-  }
+// //   For local development use:
+
+// const options = {
+//     httpOnly: true,
+//     secure: false,
+//     sameSite: "lax",
+// };
 
   return res
   .status(200)
-  .cookie("accessToken",accessToken,options)
-  .cookie("refreshToken",refreshToken,options)
+  .cookie("accessToken",accessToken,cookieOptions)
+  .cookie("refreshToken",refreshToken,cookieOptions)
   .json(
     new ApiResponse(
         200,
@@ -202,15 +207,21 @@ const logoutUser = asyncHandler(async(req,res)=>{
     )
     
 
-    const options = {
-        httpOnly : true, // Prevents JavaScript from accessing cookies.
-        secure : true    // Cookies only travel over: HTTPS
-        }    
+    // const options = {
+    //     httpOnly : true, // Prevents JavaScript from accessing cookies.
+    //     secure : true    // Cookies only travel over: HTTPS
+    //     }    
+
+    // const options = {
+    // httpOnly: true,
+    // secure: false,
+    // sameSite: "lax",
+    //         };
 
     return res
     .status(200)
-    .clearCookie('accessToken',options)
-    .clearCookie('refreshToken',options)
+    .clearCookie('accessToken',cookieOptions)
+    .clearCookie('refreshToken',cookieOptions)
     .json(
         new ApiResponse(200,{},"User logged Out")
     )
@@ -222,10 +233,14 @@ const refreshAccessToken = asyncHandler(async(req,res) => {
   try {
     //  const incomingRefreshToken = req.cookies.refreshToken || req.body.cookies.refreshToken
     // This looks in the body first, then fallback to cookies if you add them later
-    const incomingRefreshToken = req.body.refreshToken || req.body.token || req.cookies?.refreshToken;
+    // const incomingRefreshToken = req.body.refreshToken || req.body.token || req.cookies?.refreshToken;
+    const incomingRefreshToken = req.cookies?.refreshToken;
 
     if (!incomingRefreshToken) {
-        return res.status(401).json("Refresh Token not found!");
+    throw new ApiError(
+        401,
+        "Session expired. Please log in again."
+    );
     }
 
 
@@ -237,8 +252,16 @@ const refreshAccessToken = asyncHandler(async(req,res) => {
       throw new ApiError(401,"unauthorized request")
      }
   
-     const decodedToken =  jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET)
+        let decodedToken;
 
+        try {
+        decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+        } catch {
+        throw new ApiError(401, "Invalid or expired refresh token.");
+        }
     //  console.log("decodedToken",decodedToken)
 
     const user = await User.findById(decodedToken.id)
@@ -252,28 +275,27 @@ const refreshAccessToken = asyncHandler(async(req,res) => {
       throw new ApiError(401,"Refresh Token is Expired or Used")
     }
   
-    const options = {
-      httpOnly : true,
-      secure : true
-    }
   
-   const {accessToken,newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+   const {accessToken,refreshToken} = await generateAccessAndRefreshTokens(user._id)
     
   return res
   .status(200)
-  .cookie('accessToken',accessToken,options)
-  .cookie('refreshToken',newRefreshToken,options)
+  .cookie("accessToken", accessToken)
+  .cookie("refreshToken", refreshToken)
   .json(
-      new ApiResponse(
-          200,
-          {accessToken,refreshToken : newRefreshToken,options},
-          'Access Token Refreshed'
-      )
-  )
-  } catch (error) {
-    throw new ApiError(401,error?.message || 
-        "Invalid Refresh Token"
+    new ApiResponse(
+      200,
+      {
+        user: await User.findById(user._id).select("-password -refreshToken"),
+      },
+      "Access token refreshed successfully."
     )
+  );
+  } catch (error) {
+        throw new ApiError(
+            401,
+            "Your session has expired. Please log in again."
+            );
   }
 
    
@@ -314,11 +336,23 @@ const changeCurrentPassword = asyncHandler(async (req,res) => {
 })
 
 const getCurrentUser = asyncHandler(async(req,res) => {
+    const user = await User.findById(req.user._id)
+  .select("-password -refreshToken");
+
     return res
+    .set({
+        "Cache-Control": "no-store, no-cache, must-revalidate, private, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    })
     .status(200)
     .json(
-        new ApiResponse(200,req.user,'Current User fetched Successfully')
-    )
+        new ApiResponse(
+        200,
+        user,
+        "Current User fetched Successfully"
+        )
+    );
 })
 
 

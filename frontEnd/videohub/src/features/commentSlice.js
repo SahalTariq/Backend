@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
 const API = "http://localhost:8000/api/v1/comments";
+const authCommentApi = "/comments"
 
 // ======================
 // GET COMMENTS
@@ -34,18 +36,15 @@ export const addComment = createAsyncThunk(
   "comments/addComment",
   async ({ videoId, content }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      console.log("Token in addComment:", token);
+    
       console.log("VideoId in addComment:", videoId);
-      const res = await fetch(`${API}/${videoId}`, {
+      const res = await fetchWithAuth(`${API}/${videoId}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+        headers:{
+        "Content-Type":"application/json"
         },
         body: JSON.stringify({ content }),
       });
-     console.log(localStorage.getItem("token"));
 
       const data = await res.json();
 
@@ -68,13 +67,11 @@ export const updateComment = createAsyncThunk(
   "comments/updateComment",
   async ({ commentId, content }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API}/${commentId}`, {
+      const res = await fetchWithAuth(`${API}/${commentId}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+        headers:{
+        "Content-Type":"application/json"
         },
         body: JSON.stringify({ content }),
       });
@@ -100,13 +97,9 @@ export const deleteComment = createAsyncThunk(
   "comments/deleteComment",
   async (commentId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API}/${commentId}`, {
+      const res = await fetchWithAuth(`${API}/${commentId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!res.ok) {
