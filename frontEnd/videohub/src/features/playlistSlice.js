@@ -1,7 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
-const BASE_URL = "http://localhost:8000/api/v1/playlists";
+const backendUrl = import.meta.env.VITE_API_URL;
+
+
+const BASE_URL = `${backendUrl}/playlists`;
 
 /* =========================
    GET USER PLAYLISTS

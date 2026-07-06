@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { apiService } from "../app/api.js";
 import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
+const backendUrl = import.meta.env.VITE_API_URL;
+
 //  Async thunk RegisterUser
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
@@ -33,7 +35,7 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUserApi = async () => {
 
-  const res = await fetchWithAuth("http://localhost:8000/api/v1/users/logout", {
+  const res = await fetchWithAuth(`${backendUrl}/users/logout`, {
     method: "POST",
   });
 
@@ -51,7 +53,7 @@ export const getCurrentUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await fetchWithAuth(
-        "http://localhost:8000/api/v1/users/current-user",
+        `${backendUrl}/users/current-user`,
         {
           method: "GET",
         },

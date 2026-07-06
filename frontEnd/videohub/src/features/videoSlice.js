@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { apiServiceVideos } from "../app/api.js";
 import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
+const backendUrl = import.meta.env.VITE_API_URL;
 
 // Upload video with authentication
 export const uploadVideo = createAsyncThunk(
@@ -9,7 +10,7 @@ export const uploadVideo = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       
-      const response = await fetchWithAuth("http://localhost:8000/api/v1/videos/", {
+      const response = await fetchWithAuth(`${backendUrl}/videos/`, {
         method: "POST",
         body: formData,
         
@@ -30,13 +31,12 @@ export const uploadVideo = createAsyncThunk(
 );
 
 
-
 // Get all videos using fetch
 export const getVideos = createAsyncThunk(
   "video/getVideos",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/videos");
+      const response = await fetch(`${backendUrl}/videos`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -57,7 +57,7 @@ export const getMyVideos = createAsyncThunk(
   async (_, { rejectWithValue }) => {
 
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/v1/videos/profile", {
+      const res = await fetchWithAuth(`${backendUrl}/videos/profile`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

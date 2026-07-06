@@ -1,12 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
+
+const backendUrl = import.meta.env.VITE_API_URL;
+
 // Toggle like on video
 export const toggleVideoLike = createAsyncThunk(
   "like/toggleVideoLike",
   async (videoId, { rejectWithValue }) => {
     try {
-      const response = await fetchWithAuth(`http://localhost:8000/api/v1/likes/toggle/v/${videoId}`, {
+      const response = await fetchWithAuth(`${backendUrl}/likes/toggle/v/${videoId}`, {
         method: "POST",
       });
       const data = await response.json();
@@ -23,7 +26,7 @@ export const getLikedVideos = createAsyncThunk(
   "like/getLikedVideos",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetchWithAuth("http://localhost:8000/api/v1/likes/videos", {
+      const response = await fetchWithAuth(`${backendUrl}/likes/videos`, {
         
       });
       const data = await response.json();

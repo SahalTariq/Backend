@@ -1,7 +1,9 @@
 import { clearUser } from "../features/authSlice.js";
 // import {useNavigate} from "react-router-dom";
+const backendUrl = import.meta.env.VITE_API_URL;
 
-const API_BASE = "http://localhost:8000/api/v1";
+// const API_BASE = "http://localhost:8000/api/v1";
+const API_BASE = `${backendUrl}`;
 
 export const fetchWithAuth = async (url, options = {},redirectOnFail = true) => {
 

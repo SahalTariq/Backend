@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchWithAuth } from "../app/fetchWithAuth.js";
 
-const API = "http://localhost:8000/api/v1/comments";
-const authCommentApi = "/comments"
+const backendUrl = import.meta.env.VITE_API_URL;
+
+// const API = "http://localhost:8000/api/v1/comments";
+ const API = `${backendUrl}/comments`;
+
 
 // ======================
 // GET COMMENTS

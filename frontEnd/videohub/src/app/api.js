@@ -1,4 +1,7 @@
-const API_BASE_URL = "http://localhost:8000/api/v1/users";
+const backendUrl = import.meta.env.VITE_API_URL;
+
+// const API_BASE_URL = "http://localhost:8000/api/v1/users";
+const API_BASE_URL = `${backendUrl}/users`;
 import { fetchWithAuth } from "./fetchWithAuth.js";
 
 export const apiService = {
@@ -39,41 +42,39 @@ export const apiService = {
   return data;
 },
 
-
-
 };
 
 
-const API_BASE_URL_Videos = "http://localhost:8000/api/v1/videos";
-const authVideosAPi = "/videos";
+// const API_BASE_URL_Videos = "http://localhost:8000/api/v1/videos";
+// const authVideosAPi = "/videos";
 
-export const apiServiceVideos = {
-  uploadVideo: async (formData) => {
-    const response = await fetchWithAuth(`${authVideosAPi}/`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
+// export const apiServiceVideos = {
+//   uploadVideo: async (formData) => {
+//     const response = await fetchWithAuth(`${authVideosAPi}/`, {
+//       method: "POST",
+//       body: formData,
+//     });
+//     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Upload failed");
-    }
+//     if (!response.ok) {
+//       throw new Error(data.message || "Upload failed");
+//     }
 
-    return data;
-  },
+//     return data;
+//   },
 
-  getVideos: async () => {
-  const response = await fetch(`${API_BASE_URL_Videos}/`,{
-    method:"GET"
+//   getVideos: async () => {
+//   const response = await fetch(`${API_BASE_URL_Videos}/`,{
+//     method:"GET"
 
-  });
+//   });
  
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text);
-    }
+//     if (!response.ok) {
+//       const text = await response.text();
+//       throw new Error(text);
+//     }
 
-    const data = await response.json();
-    return data;
-}
-};
+//     const data = await response.json();
+//     return data;
+// }
+// };
