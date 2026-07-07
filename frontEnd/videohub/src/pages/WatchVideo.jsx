@@ -82,9 +82,12 @@ export default function WatchVideo() {
         </button>
        ) : ( <p className="text-gray-400">
           🔒 Please{" "}
-          <a href="/login" className="text-blue-400 hover:underline font-medium">
+          <button
+            onClick={() => navigate("/login")}
+            className="text-blue-400 hover:underline font-medium"
+          >
             login
-          </a>{" "}
+          </button>{" "}
           to Create and Save to Playlist
         </p> )}
       </div>
