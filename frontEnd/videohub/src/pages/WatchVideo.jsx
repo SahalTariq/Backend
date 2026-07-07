@@ -4,6 +4,7 @@ import CommentSection from "../componnents/CommentSection";
 import PlaylistModal from "../componnents/PlaylistModal";
 import { useSelector } from "react-redux";
 import LikeButton from "../componnents/LikeButton";
+import { useNavigate } from "react-router-dom";
 
 
 const backendUrl = import.meta.env.VITE_API_URL;
@@ -14,6 +15,7 @@ export default function WatchVideo() {
 
    const [isLiked, setIsLiked] = useState(false);
    const { likedVideos } = useSelector((state) => state.like);
+   const navigate = useNavigate();
 
    const { id } = useParams();
 
