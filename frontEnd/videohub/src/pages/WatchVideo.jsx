@@ -5,6 +5,9 @@ import PlaylistModal from "../componnents/PlaylistModal";
 import { useSelector } from "react-redux";
 import LikeButton from "../componnents/LikeButton";
 
+
+const backendUrl = import.meta.env.VITE_API_URL;
+
 export default function WatchVideo() {
 
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -32,7 +35,7 @@ export default function WatchVideo() {
     const fetchVideo = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8000/api/v1/videos/${id}`
+          `${backendUrl}/videos/${id}`
         );
 
         if (!res.ok) {
