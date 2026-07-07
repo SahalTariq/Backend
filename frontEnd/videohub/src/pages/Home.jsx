@@ -5,6 +5,8 @@ import { useDispatch,useSelector } from "react-redux";
 import { getVideos } from "../features/videoSlice.js";
 import { useState } from "react";
 
+const backendUrl = import.meta.env.VITE_API_URL;
+
 
 
 export default function Home({search}) {
@@ -17,7 +19,7 @@ export default function Home({search}) {
     const fetchVideos = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/api/v1/videos/");
+        const response = await fetch(`${backendUrl}/videos/`);
         
         if (!response.ok) {
           throw new Error("Failed to fetch videos");
