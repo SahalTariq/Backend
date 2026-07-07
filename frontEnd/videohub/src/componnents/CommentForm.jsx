@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addComment } from "../features/commentSlice.js";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export default function CommentForm({ videoId }) {
   const [content, setContent] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
 
