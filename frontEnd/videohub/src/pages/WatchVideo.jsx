@@ -19,8 +19,6 @@ export default function WatchVideo() {
 
    const { id } = useParams();
 
-   console.log("Video ID:", id);
-
    useEffect(() => {
     if (likedVideos && likedVideos.length > 0) {
       const found = likedVideos.find(v => v._id === id);
@@ -96,7 +94,20 @@ export default function WatchVideo() {
 
 
       <div className="flex gap-2 mt-3">
-            <LikeButton videoId={id} initialLiked={isLiked} />
+        {user ?(<LikeButton videoId={id} initialLiked={isLiked} />)
+        :(
+          <p className="text-gray-400">
+          🔒 Please{" "}
+          <button
+            onClick={() => navigate("/login")}
+            className="text-blue-400 hover:underline font-medium"
+          >
+            login
+          </button>{" "}
+          to Like Video
+        </p>
+        )}
+            
       </div>
 
 
